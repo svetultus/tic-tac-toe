@@ -8,7 +8,6 @@ function Square (props) {
         {props.value}
       </button>
     );
-
 }
 
 class Board extends React.Component {
@@ -60,32 +59,66 @@ class Board extends React.Component {
 class Game extends React.Component {
   constructor(props) {
     super(props);
+    
     this.state = {
       stepNumber: 0,
+      boardSize: props.boardSize,
       history: [
         {
-          squares: Array(9).fill(null),
+          squares: Array(props.boardSize * props.boardSize).fill(null),
         }
       ],
       player: true,
-      winner: false,
-      boardSize: 3
-    } 
+      winner: false
+    };
+
+    this.winnerMask = this.getWinnerMask(props.boardSize);
+    console.log(this.winnerMask);
+  }
+
+  getWinnerMask (boardSize) {
+    boardSize = Number(boardSize);
+    let maskRows = [];
+    let maskCols = [];
+    let maskDiag1 = [];
+    let maskDiag2 = [];
+
+    for (let i = 0; i < boardSize; i++) {
+      let maskRow = [];
+      let maskCol = [];
+      
+      // диагонали
+      maskDiag1.push (i * boardSize + i);
+      maskDiag2.push (i * (boardSize) + boardSize - i - 1);
+
+      for (let j = 0; j < boardSize; j++) {
+        //ряд
+        maskRow.push(i * boardSize + j)
+        //колонка
+        maskCol.push(i + boardSize * j)
+      }
+      maskRows.push(maskRow);
+      maskCols.push(maskCol);
+    }
+
+    return [].concat(maskRows, maskCols, [maskDiag1], [maskDiag2]);
   }
 
   handleClick(i) {
     const history = this.state.history.slice(0, this.state.stepNumber + 1);
     const current = history[history.length-1];
     const squares = current.squares.slice();
-    let winner =  calculateWinner(squares);
 
-    if(winner)
-      this.setState({winner: winner});
-
-    if (squares[i])
+    if (squares[i] || this.state.winner)
       return;
 
     squares[i] = this.state.player ? 'X' : 'O';
+
+    let winner =  calculateWinner(squares, this.winnerMask);
+
+    if(winner)
+      this.setState({winner: winner});
+    
     this.setState({
       history: history.concat({
         squares: squares
@@ -116,7 +149,7 @@ class Game extends React.Component {
       );
     });
 
-    let winner = calculateWinner(current.squares.slice());
+    let winner = calculateWinner(current.squares.slice(), this.winnerMask);
     let status;
     if (winner) {
         status = 'Winner: ' + (winner);
@@ -143,31 +176,36 @@ class Game extends React.Component {
   }
 }
 
-function calculateWinner (squares) {
-  const lines = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6],
-  ];
-  console.log(squares);
+function calculateWinner (squares, winnerMask) {
 
-  for (let i = 0; i < lines.length; i++) {
-    const [a, b, c] = lines [i];
-    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a];
+  console.log(squares);
+  
+  let mask = winnerMask.slice();
+  let result;
+
+  if (mask.some((row) => {
+    if (result) {
+      return true;
     }
-  }
+    return result = row.reduce((prev, current, index, array) => {
+      if (squares[prev] && index <= row.length && (squares[prev] === squares[current])) {
+        return current;
+      } else {
+        return false;
+      }
+    });
+    
+      
+  })) {
+    return squares[result];
+  };
+
 }
 
 // ========================================
 
 ReactDOM.render(
-  <Game />,
+  <Game boardSize = "5" />,
   document.getElementById('root')
 );
 
