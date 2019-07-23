@@ -4,7 +4,7 @@ import './index.css';
 
 function Square (props) {
     return (
-      <button className="square"  onClick = {props.onClick} >
+      <button className="square"  onClick={props.onClick} >
         {props.value}
       </button>
     );
@@ -17,12 +17,13 @@ class Board extends React.Component {
       <Square
         value={this.props.squares[i]}
         onClick={() => this.props.onClick(i)}
+        key={"square_" + i}
       />
     );
   }
   
   renderRow (i, row) {
-    let col = row.slice();
+    let col=row.slice();
 
     return col.map((element, j)=>{
       return (
@@ -32,14 +33,14 @@ class Board extends React.Component {
   }
 
   renderBoard() {
-    let row = [];
-    for (let i = 0; i < this.props.boardSize; i++) {
-      row[i] = i;
+    let row=[];
+    for (let i=0; i < this.props.boardSize; i++) {
+      row[i]=i;
     }
 
     return row.map((element, i) => {
       return (
-        <div className="row">
+        <div className="row" key={"row_" + i}>
           {this.renderRow(i, row)}
         </div>
       )
@@ -59,9 +60,10 @@ class Board extends React.Component {
 class Game extends React.Component {
   constructor(props) {
     super(props);
-    let chooseBoardSize = document.getElementById('chooseBoardSize');
-    let boardSize = chooseBoardSize ? chooseBoardSize.value : 3;
-    this.state = {
+    // let chooseBoardSize=document.getElementById('chooseBoardSize');
+    // let boardSize=chooseBoardSize ? chooseBoardSize.value : 3;
+    const boardSize=3;
+    this.state={
       boardSize: boardSize,
       stepNumber: 0,
       history: [
@@ -73,25 +75,27 @@ class Game extends React.Component {
       winner: false,
       gameOver: false,
     };
-    this.winnerMask = this.getWinnerMask(this.state.boardSize);
+    this.winnerMask=this.getWinnerMask(this.state.boardSize);
+    this.resetGame=this.resetGame.bind(this);
+    this.boardSizeChange=this.boardSizeChange.bind(this);
   }
 
   getWinnerMask (boardSize) {
-    boardSize = Number(boardSize);
-    let maskRows = [];
-    let maskCols = [];
-    let maskDiag1 = [];
-    let maskDiag2 = [];
+    boardSize=Number(boardSize);
+    let maskRows=[];
+    let maskCols=[];
+    let maskDiag1=[];
+    let maskDiag2=[];
 
-    for (let i = 0; i < boardSize; i++) {
-      let maskRow = [];
-      let maskCol = [];
+    for (let i=0; i < boardSize; i++) {
+      let maskRow=[];
+      let maskCol=[];
       
       // диагонали
       maskDiag1.push (i * boardSize + i);
       maskDiag2.push (i * (boardSize) + boardSize - i - 1);
 
-      for (let j = 0; j < boardSize; j++) {
+      for (let j=0; j < boardSize; j++) {
         //ряд
         maskRow.push(i * boardSize + j)
         //колонка
@@ -105,16 +109,16 @@ class Game extends React.Component {
   }
 
   handleClick(i) {
-    const history = this.state.history.slice(0, this.state.stepNumber + 1);
-    const current = history[history.length-1];
-    const squares = current.squares.slice();
+    const history=this.state.history.slice(0, this.state.stepNumber + 1);
+    const current=history[history.length-1];
+    const squares=current.squares.slice();
 
     if (squares[i] || this.state.winner || this.state.gameOver)
       return;
 
-    squares[i] = this.state.player ? 'X' : 'O';
+    squares[i]=this.state.player ? 'X' : 'O';
 
-    let winner =  calculateWinner(squares, this.winnerMask);
+    let winner= calculateWinner(squares, this.winnerMask);
 
     if(winner) {
       this.setState({winner: winner});
@@ -131,13 +135,6 @@ class Game extends React.Component {
       player: !this.state.player,
       stepNumber: history.length
       });
-  }
-
-  boardSizeChange (e) {
-    this.setState({boardSize: e.target.value});
-    console.log(e.target.value);
-    console.log(e.target);
-    console.log(e.target.options);
   }
 
   jumpTo(step) {
@@ -160,13 +157,19 @@ class Game extends React.Component {
       winner: false,
       gameOver: false
     });
+    this.winnerMask=this.getWinnerMask(this.state.boardSize);
+  }
+
+  async boardSizeChange (e) {
+    await this.setState({boardSize: Number(e.target.value)});
+    this.resetGame();
   }
   
   render() {
-    const history = this.state.history;
-    const current = history[this.state.stepNumber];
-    const moves = history.map((step, move)=> {
-      const desc = move ?
+    const history=this.state.history;
+    const current=history[this.state.stepNumber];
+    const moves=history.map((step, move)=> {
+      const desc=move ?
         'Перейти к ходу '+ move :
         'Перейти к началу игры';
       return (
@@ -178,25 +181,25 @@ class Game extends React.Component {
     let status;
 
     if (this.state.winner) {
-        status = 'Winner: ' + (this.state.winner);
+        status='Winner: ' + (this.state.winner);
       }
       else {
         if (!this.state.gameOver) {
-          status = 'Next player: ' + (this.state.player ? 'X' : 'O');
+          status='Next player: ' + (this.state.player ? 'X' : 'O');
         } else {
-          status = 'Ничья!';
+          status='Ничья!';
         }
       }
 
     return (
       <div className="game">
         <div className="game-controls">
-          <label for="chooseBoardSize">Размер доски </label>
-          <select id="chooseBoardSize" onChange={((e)=>{this.boardSizeChange(e)})}>
-            <option value = "3">3 * 3</option>
-            <option value = "4">4 * 4</option>
-            <option value = "5">5 * 5</option>
-            <option value = "6">6 * 6</option>
+          <label htmlFor="chooseBoardSize">Размер доски </label>
+          <select id="chooseBoardSize" onChange={(e)=>{this.boardSizeChange(e)}}>
+            <option value="3">3 * 3</option>
+            <option value="4">4 * 4</option>
+            <option value="5">5 * 5</option>
+            <option value="6">6 * 6</option>
           </select>
           <button onClick={(e)=>{this.resetGame(e)}}>Начать заново</button>
         </div>
@@ -218,14 +221,14 @@ class Game extends React.Component {
 
 function calculateWinner (squares, winnerMask) {
   
-  let mask = winnerMask.slice();
+  let mask=winnerMask.slice();
   let result;
 
   if (mask.some((row) => {
     if (result) {
       return true;
     }
-    return result = row.reduce((prev, current, index, array) => {
+    return result=row.reduce((prev, current, index, array) => {
       if (squares[prev] && index <= row.length && (squares[prev] === squares[current])) {
         return current;
       } else {
@@ -241,18 +244,18 @@ function calculateWinner (squares, winnerMask) {
 }
 
 function isGamePossible (squares, winnerMask) {
-  let mask = winnerMask.slice();
+  let mask=winnerMask.slice();
   let rowIsNotBlocked;
   let boardIsNotBlocked;
 
-  boardIsNotBlocked = mask.some((row)=>{
+  boardIsNotBlocked=mask.some((row)=>{
     let player;
 
-    rowIsNotBlocked = row.every((elem)=> {
+    rowIsNotBlocked=row.every((elem)=> {
       if (squares[elem] === null) {
         return true;
       } else if (player === undefined) {
-          player = squares [elem];
+          player=squares[elem];
       }
       if (squares[elem] === player ) {
         return true;
