@@ -69,11 +69,11 @@ class Game extends React.Component {
         }
       ],
       player: true,
-      winner: false
+      winner: false,
+      gameOver: false
     };
 
     this.winnerMask = this.getWinnerMask(props.boardSize);
-    console.log(this.winnerMask);
   }
 
   getWinnerMask (boardSize) {
@@ -109,15 +109,20 @@ class Game extends React.Component {
     const current = history[history.length-1];
     const squares = current.squares.slice();
 
-    if (squares[i] || this.state.winner)
+    if (squares[i] || this.state.winner || this.state.gameOver)
       return;
 
     squares[i] = this.state.player ? 'X' : 'O';
 
     let winner =  calculateWinner(squares, this.winnerMask);
 
-    if(winner)
+    if(winner) {
       this.setState({winner: winner});
+    } else {
+      if (!isGamePossible (squares, this.winnerMask)) {
+        this.setState({gameOver: true});
+      }
+    }
     
     this.setState({
       history: history.concat({
@@ -149,13 +154,16 @@ class Game extends React.Component {
       );
     });
 
-    let winner = calculateWinner(current.squares.slice(), this.winnerMask);
     let status;
-    if (winner) {
-        status = 'Winner: ' + (winner);
+    if (this.state.winner) {
+        status = 'Winner: ' + (this.state.winner);
       }
       else {
-        status = 'Next player: ' + (this.state.player ? 'X' : 'O');
+        if (!this.state.gameOver) {
+          status = 'Next player: ' + (this.state.player ? 'X' : 'O');
+        } else {
+          status = 'Ничья!';
+        }
       }
 
     return (
@@ -177,8 +185,6 @@ class Game extends React.Component {
 }
 
 function calculateWinner (squares, winnerMask) {
-
-  console.log(squares);
   
   let mask = winnerMask.slice();
   let result;
@@ -202,10 +208,37 @@ function calculateWinner (squares, winnerMask) {
 
 }
 
+function isGamePossible (squares, winnerMask) {
+  let mask = winnerMask.slice();
+  let rowIsNotBlocked;
+  let boardIsNotBlocked;
+
+  boardIsNotBlocked = mask.some((row)=>{
+    let player;
+
+    rowIsNotBlocked = row.every((elem)=> {
+      if (squares[elem] === null) {
+        return true;
+      } else if (player === undefined) {
+          player = squares [elem];
+      }
+      if (squares[elem] === player ) {
+        return true;
+      } else {
+        return false;
+      }
+    });
+    
+    return rowIsNotBlocked;
+  });
+  
+  return boardIsNotBlocked;
+}
+
 // ========================================
 
 ReactDOM.render(
-  <Game boardSize = "5" />,
+  <Game boardSize = "3" />,
   document.getElementById('root')
 );
 
