@@ -43,8 +43,14 @@ ol, ul {
 .game {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
 }
 
 .game-info {
   margin-left: 20px;
+}
+
+.game-controls {
+  width: 100%;
+  flex: 100% 0 0;
 }

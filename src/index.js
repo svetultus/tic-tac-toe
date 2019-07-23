@@ -59,21 +59,21 @@ class Board extends React.Component {
 class Game extends React.Component {
   constructor(props) {
     super(props);
-    
+    let chooseBoardSize = document.getElementById('chooseBoardSize');
+    let boardSize = chooseBoardSize ? chooseBoardSize.value : 3;
     this.state = {
+      boardSize: boardSize,
       stepNumber: 0,
-      boardSize: props.boardSize,
       history: [
         {
-          squares: Array(props.boardSize * props.boardSize).fill(null),
+          squares: Array(boardSize * boardSize).fill(null),
         }
       ],
       player: true,
       winner: false,
-      gameOver: false
+      gameOver: false,
     };
-
-    this.winnerMask = this.getWinnerMask(props.boardSize);
+    this.winnerMask = this.getWinnerMask(this.state.boardSize);
   }
 
   getWinnerMask (boardSize) {
@@ -133,11 +133,33 @@ class Game extends React.Component {
       });
   }
 
+  boardSizeChange (e) {
+    this.setState({boardSize: e.target.value});
+    console.log(e.target.value);
+    console.log(e.target);
+    console.log(e.target.options);
+  }
+
   jumpTo(step) {
     this.setState({
       stepNumber: step,
       player: (step % 2) === 0
       });
+  }
+
+  resetGame () {
+    this.setState ({
+      stepNumber: 0,
+      boardSize: this.state.boardSize,
+      history: [
+        {
+          squares: Array(this.state.boardSize * this.state.boardSize).fill(null),
+        }
+      ],
+      player: true,
+      winner: false,
+      gameOver: false
+    });
   }
   
   render() {
@@ -153,8 +175,8 @@ class Game extends React.Component {
         </li>
       );
     });
-
     let status;
+
     if (this.state.winner) {
         status = 'Winner: ' + (this.state.winner);
       }
@@ -168,6 +190,16 @@ class Game extends React.Component {
 
     return (
       <div className="game">
+        <div className="game-controls">
+          <label for="chooseBoardSize">Размер доски </label>
+          <select id="chooseBoardSize" onChange={((e)=>{this.boardSizeChange(e)})}>
+            <option value = "3">3 * 3</option>
+            <option value = "4">4 * 4</option>
+            <option value = "5">5 * 5</option>
+            <option value = "6">6 * 6</option>
+          </select>
+          <button onClick={(e)=>{this.resetGame(e)}}>Начать заново</button>
+        </div>
         <div className="game-board">
           <Board 
             onClick={(i)=>this.handleClick(i)} 
@@ -238,7 +270,7 @@ function isGamePossible (squares, winnerMask) {
 // ========================================
 
 ReactDOM.render(
-  <Game boardSize = "3" />,
+  <Game />,
   document.getElementById('root')
 );
 
