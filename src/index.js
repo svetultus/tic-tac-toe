@@ -122,7 +122,6 @@ class Game extends React.Component {
     const history=this.state.history.slice(0, this.state.stepNumber + 1);
     const current=history[history.length-1];
     const squares=current.squares.slice();
-    console.log("row=", row, " col=", col);
 
     if (squares[i] || this.state.winner || this.state.gameOver)
       return;
@@ -180,12 +179,7 @@ class Game extends React.Component {
   }
 
   sortHistory() {
-    // let history = this.state.history.slice();
-
-    // history.reverse();
-    // this.setState({history: history});
     this.setState({sortingDirection: !this.state.sortingDirection});
-    console.log(this.state.sortingDirection);
   }
 
   async boardSizeChange (e) {
