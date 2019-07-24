@@ -73,10 +73,9 @@ class Board extends React.Component {
 
   render() {
     return (
-      <div>
-        <div className="status"></div>
+      <React.Fragment>
         {this.renderBoard()}
-      </div>
+      </React.Fragment>
     );
   }
 }
@@ -212,27 +211,29 @@ class Game extends React.Component {
       history.reverse();
     }
     const moves=history.map((step, index)=> {
-      let desc;
+      let desc, btnClass;
       let moveNumber = (!this.state.sortingDirection) ? historyLength - index - 1 : index;
 
       if (!this.state.sortingDirection) {
         desc = (index < historyLength - 1) ? 
         'Перейти к ходу '+ moveNumber :
         'Перейти к началу игры';
+        btnClass = (index < historyLength - 1) ? "list-moves__btn" : "list-moves__btn list-moves__btn_toBegin";
       } else {
         desc = moveNumber ?
         'Перейти к ходу '+ moveNumber :
         'Перейти к началу игры';
+        btnClass = (moveNumber) ? "list-moves__btn" : "list-moves__btn list-moves__btn_toBegin";
       }
       
       const coords = (step.coords.length > 0) ? 
-        <p>Ход: {step.coords[0]} - {step.coords[1]}</p> :
+        <span className="list-moves__description">Ход: {step.coords[0]} - {step.coords[1]}</span> :
         "";
 
       return (
-        <li key={"move-"+moveNumber} className={(moveNumber === this.state.stepNumber) ? "game-info__step_current" : ""}>
+        <li key={"move-"+moveNumber} className={(moveNumber === this.state.stepNumber) ? "list-moves__item list-moves__item_current" : "list-moves__item"}>
           {coords}
-          <button onClick={ () => this.jumpTo(moveNumber)}>{desc}</button>
+          <button className={btnClass} onClick={ () => this.jumpTo(moveNumber)}>{desc}</button>
         </li>
       );
     });
@@ -252,15 +253,22 @@ class Game extends React.Component {
     return (
       <div className="game">
         <div className="game-controls">
-          <label htmlFor="chooseBoardSize">Размер доски </label>
-          <select id="chooseBoardSize" onChange={(e)=>{this.boardSizeChange(e)}}>
-            <option value="3">3 * 3</option>
-            <option value="4">4 * 4</option>
-            <option value="5">5 * 5</option>
-            <option value="6">6 * 6</option>
-          </select>
-          <button onClick={(e)=>{this.resetGame(e)}}>Начать заново</button>
+          <div className="game-controls__select">
+            <label htmlFor="chooseBoardSize">Размер доски </label>
+            <select id="chooseBoardSize" onChange={(e)=>{this.boardSizeChange(e)}}>
+              <option value="3">3 * 3</option>
+              <option value="4">4 * 4</option>
+              <option value="5">5 * 5</option>
+              <option value="6">6 * 6</option>
+            </select>
+          </div>
+          <div>
+          {(this.state.history.length !== 1 && 
+            <button onClick={(e)=>{this.resetGame(e)}}>Начать заново</button>
+          )}
+          </div>
         </div>
+        <div className="game-status">{status}</div>
         <div className="game-board">
           <Board 
             onClick={(i, row, col)=>this.handleClick(i, row, col)} 
@@ -271,9 +279,8 @@ class Game extends React.Component {
            />
         </div>
         <div className="game-info">
-          <div>{status}</div>
-          <button onClick={()=> {this.sortHistory()}}>Сортировать</button>
-          <ol>{moves}</ol>
+          <button onClick={()=> {this.sortHistory()}} className={ this.state.sortingDirection ? "ascending" : "descending"}>Сортировать ходы</button>
+          <ol className="list-moves">{moves}</ol>
         </div>
       </div>
     );
