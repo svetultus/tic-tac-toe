@@ -3,8 +3,15 @@ import ReactDOM from 'react-dom';
 import './index.css';
 
 function Square (props) {
+  console.log(props.classArray);
+    let classArray = props.classArray.slice();
+    let classes = ["square"];
+    classes = classes.concat(classArray);
+    classes = classes.join(" ");
+    console.log(classes);
+
     return (
-      <button className={"square " + "square_" + props.className}  onClick={props.onClick} >
+      <button className={classes}  onClick={props.onClick} >
         {props.value}
       </button>
     );
@@ -17,15 +24,24 @@ class Board extends React.Component {
     let isInRowResult = false;
     if (this.props.rowResult) rowResult = this.props.rowResult.slice();
     isInRowResult = (rowResult && rowResult.includes(i));
-    
+    console.log("renderSquare i=", i);
+    console.log("row=", row);
+    console.log("col=", col);
+    console.log("this.lastSquare", this.props.lastSquare);
+    let classArray = [];
+    if (isInRowResult) classArray.push("square_marked");
+    if (this.props.lastSquare[0] === row && this.props.lastSquare[1] === col) {
+      classArray.push("square_lastMove");
+    }
+
     return (
       <Square
         value={this.props.squares[i]}
         onClick={() => this.props.onClick(i, row, col)}
         key={"square_" + i}
-        className={isInRowResult ? "marked" : ""}
         row={row}
         col={col}
+        classArray={classArray}
       />
     );
   }
@@ -191,6 +207,7 @@ class Game extends React.Component {
     const history=this.state.history.slice();
     const current=history[this.state.stepNumber];
     const historyLength = history.length;
+
     if (!this.state.sortingDirection) {
       history.reverse();
     }
@@ -250,6 +267,7 @@ class Game extends React.Component {
             squares={current.squares}
             boardSize={this.state.boardSize}
             rowResult={current.rowResult}
+            lastSquare={current.coords}
            />
         </div>
         <div className="game-info">
