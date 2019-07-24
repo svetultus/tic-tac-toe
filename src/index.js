@@ -75,14 +75,15 @@ class Game extends React.Component {
       history: [
         {
           squares: Array(boardSize * boardSize).fill(null),
-          coords: []
+          coords: [],
+          rowResult: null
         }
       ],
       coords: Array (boardSize * boardSize).fill(null),
       player: true,
       winner: false,
       gameOver: false,
-      rowResult: null
+      sortingDirection: true
     };
     this.winnerMask=this.getWinnerMask(this.state.boardSize);
     this.resetGame=this.resetGame.bind(this);
@@ -132,8 +133,7 @@ class Game extends React.Component {
 
     if (winner) {
       this.setState({
-        winner: winner,
-        rowResult: rowResult
+        winner: winner
       });
     } else {
       if (!isGamePossible (squares, this.winnerMask)) {
@@ -144,7 +144,8 @@ class Game extends React.Component {
     this.setState({
       history: history.concat({
         squares: squares,
-        coords: [row, col]
+        coords: [row, col],
+        rowResult: rowResult
       }),
       player: !this.state.player,
       stepNumber: history.length
@@ -165,14 +166,26 @@ class Game extends React.Component {
       history: [
         {
           squares: Array(this.state.boardSize * this.state.boardSize).fill(null),
+          coords: [],
+          rowResult: null
         }
       ],
+      coords: Array (this.state.boardSize * this.state.boardSize).fill(null),
       player: true,
       winner: false,
       gameOver: false,
-      rowResult: null
+      sortingDirection: true
     });
     this.winnerMask=this.getWinnerMask(this.state.boardSize);
+  }
+
+  sortHistory() {
+    // let history = this.state.history.slice();
+
+    // history.reverse();
+    // this.setState({history: history});
+    this.setState({sortingDirection: !this.state.sortingDirection});
+    console.log(this.state.sortingDirection);
   }
 
   async boardSizeChange (e) {
@@ -181,20 +194,34 @@ class Game extends React.Component {
   }
   
   render() {
-    const history=this.state.history;
+    const history=this.state.history.slice();
     const current=history[this.state.stepNumber];
-    const moves=history.map((step, move)=> {
-      const desc=move ?
-        'Перейти к ходу '+ move :
+    const historyLength = history.length;
+    if (!this.state.sortingDirection) {
+      history.reverse();
+    }
+    const moves=history.map((step, index)=> {
+      let desc;
+      let moveNumber = (!this.state.sortingDirection) ? historyLength - index - 1 : index;
+
+      if (!this.state.sortingDirection) {
+        desc = (index < historyLength - 1) ? 
+        'Перейти к ходу '+ moveNumber :
         'Перейти к началу игры';
+      } else {
+        desc = moveNumber ?
+        'Перейти к ходу '+ moveNumber :
+        'Перейти к началу игры';
+      }
+      
       const coords = (step.coords.length > 0) ? 
         <p>Ход: {step.coords[0]} - {step.coords[1]}</p> :
         "";
 
       return (
-        <li key={"move-"+move} className={(move === this.state.stepNumber) ? "game-info__step_current" : ""}>
+        <li key={"move-"+moveNumber} className={(moveNumber === this.state.stepNumber) ? "game-info__step_current" : ""}>
           {coords}
-          <button onClick={ () => this.jumpTo(move)}>{desc}</button>
+          <button onClick={ () => this.jumpTo(moveNumber)}>{desc}</button>
         </li>
       );
     });
@@ -228,11 +255,12 @@ class Game extends React.Component {
             onClick={(i, row, col)=>this.handleClick(i, row, col)} 
             squares={current.squares}
             boardSize={this.state.boardSize}
-            rowResult={this.state.rowResult}
+            rowResult={current.rowResult}
            />
         </div>
         <div className="game-info">
           <div>{status}</div>
+          <button onClick={()=> {this.sortHistory()}}>Сортировать</button>
           <ol>{moves}</ol>
         </div>
       </div>
